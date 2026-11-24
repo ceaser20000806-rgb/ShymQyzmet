@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShymQyzmet — Шымкент Smart City Road Audit</title>
+  <!-- Подключение Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Шрифт Inter и JetBrains Mono для технических данных -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            shym: {
+              bg: '#0A0A0A',
+              panel: '#121212',
+              card: '#1A1A1A',
+              border: '#262626',
+              red: '#E11D48',
+              redDark: '#9F1239',
+              crimson: '#DC2626',
+              white: '#FFFFFF',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Фирменная палитра Шымкента: глубокий черный, белый и малиново-красный тюльпан */
+    body {
+      background-color: #0A0A0A;
+      color: #FFFFFF;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0A0A0A;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #E11D48;
+    }
+
+    /* Скрытие полосы прокрутки у горизонтальных фильтров */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Анимация пульсации маркеров на карте */
+    @keyframes pulseRing {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.9;
+      }
+      70% {
+        transform: scale(2.4);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(2.4);
+        opacity: 0;
+      }
+    }
+
+    .marker-pulse {
+      animation: pulseRing 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    /* Анимация появления нового маркера */
+    @keyframes popIn {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      60% {
+        transform: translate(-50%, -50%) scale(1.25);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .marker-new {
+      animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* Красный лазерный AI-сканер в стиле ShymQyzmet */
+    @keyframes laserScan {
+      0% {
+        top: 0%;
+        opacity: 0.25;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        top: 100%;
+        opacity: 0.25;
+      }
+    }
+
+    .ai-laser-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #E11D48, #FFFFFF, #E11D48, transparent);
+      box-shadow: 0 0 18px 4px rgba(225, 29, 72, 0.85);
+      animation: laserScan 1.7s ease-in-out infinite;
+    }
+
+    /* Сетка на фоне сканера */
+    .ai-grid-overlay {
+      background-image: 
+        linear-gradient(to right, rgba(225, 29, 72, 0.14) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(225, 29, 72, 0.14) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Анимация движения трафика на SVG-карте */
+    @keyframes trafficFlow {
+      to {
+        stroke-dashoffset: -120;
+      }
+    }
+
+    .traffic-dash {
+      stroke-dasharray: 6 18;
+      animation: trafficFlow 4s linear infinite;
+    }
+
+    .traffic-dash-reverse {
+      stroke-dasharray: 6 22;
+      animation: trafficFlow 5s linear infinite reverse;
+    }
+
+    /* Радарная пульсация школьных зон */
+    @keyframes schoolZonePulse {
+      0%, 100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+
+    .school-zone-active {
+      animation: schoolZonePulse 2.6s ease-in-out infinite;
+    }
+
+    /* Стеклянный эффект темных панелей */
+    .glass-panel {
+      background: rgba(18, 18, 18, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid #262626;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-rose-600/40 selection:text-white">
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ НАВИГАЦИИ (HEADER) -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-neutral-800 px-3 sm:px-4 lg:px-6 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Логотип ShymQyzmet с красным тюльпаном Шымкента -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-neutral-950 border-2 border-rose-600/80 flex items-center justify-center shadow-lg shadow-rose-600/25 relative overflow-hidden group">
+          <!-- Фирменный SVG тюльпан Шымкента -->
+          <svg class="w-7 h-7 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Стебель и листья -->
+            <path d="M32 36V56" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M32 52C24 52 18 46 18 39C24 39 30 44 32 52Z" fill="#FFFFFF" fill-opacity="0.9"/>
+            <path d="M32 49C40 49 46 43 46 36C40 36 34 41 32 49Z" fill="#FFFFFF" fill-opacity="0.7"/>
+            <!-- Бутон красного тюльпана -->
+            <path d="M32 8C27 15 24 21 24 27C24 32.5 27.5 36 32 36C36.5 36 40 32.5 40 27C40 21 37 15 32 8Z" fill="#E11D48"/>
+            <path d="M22 14C18 19 18 27 21 32C23.5 35.5 28 36 31 36C27 32 25 24 22 14Z" fill="#DC2626"/>
+            <path d="M42 14C46 19 46 27 43 32C40.5 35.5 36 36 33 36C37 32 39 24 42 14Z" fill="#BE123C"/>
+            <!-- Блик на лепестке -->
+            <path d="M32 13C30.5 17 29.5 21 29.5 25" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-opacity="0.65"/>
+          </svg>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2">
+            <!-- Shym белым, Qyzmet красным -->
+            <span class="text-xl sm:text-2xl font-black tracking-tight">
+              <span class="text-white">Shym</span><span class="text-rose-600">Qyzmet</span>
+            </span>
+            <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-rose-600/15 text-rose-400 border border-rose-600/40">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+              <span>SHYMKENT LIVE</span>
+            </span>
+          </div>
+          <p class="text-xs text-neutral-400 hidden sm:block" id="headerSubtitle">Гражданский аудит дорог и инфраструктуры Шымкента</p>
+        </div>
+      </div>
+
+      <!-- Центральные переключатели режимов -->
+      <div class="flex items-center gap-2 order-3 lg:order-2 w-full lg:w-auto justify-between lg:justify-center overflow-x-auto no-scrollbar">
+        <!-- Режим слепых зон у школ -->
+        <button id="toggleSchoolZonesBtn" onclick="toggleSchoolZones()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 transition-all whitespace-nowrap">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-600/40 border border-rose-500 transition-all" id="schoolZoneIndicator"></span>
+          <span id="schoolZoneBtnText">Слепые зоны у школ (500м)</span>
+        </button>
+
+        <!-- Кнопка Демо-потока -->
+        <button id="toggleLiveSimBtn" onclick="toggleLiveSimulation()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 transition-all whitespace-nowrap">
+          <svg class="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span id="liveSimText">Демо-поток: ВЫКЛ</span>
+        </button>
+      </div>
+
+      <!-- Правая часть: Переключатель языков ҚАЗ | РУС и главная кнопка -->
+      <div class="flex items-center gap-2 sm:gap-3 order-2 lg:order-3">
+        <!-- Переключатель языков ҚАЗ / РУС -->
+        <div class="inline-flex items-center p-1 rounded-xl bg-neutral-950 border border-neutral-800" role="group" aria-label="Language switcher">
+          <button id="langBtnKz" onclick="setLanguage('kz')" class="px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all text-neutral-400 hover:text-white">
+            ҚАЗ
+          </button>
+          <button id="langBtnRu" onclick="setLanguage('ru')" class="px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-rose-600 text-white shadow-sm">
+            РУС
+          </button>
+        </div>
+
+        <!-- Главная кнопка действия: Сообщить о проблеме -->
+        <button onclick="openReportModal()" class="group relative inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition-all active:scale-95 whitespace-nowrap">
+          <span class="flex items-center justify-center w-5 h-5 rounded-lg bg-white text-rose-600 font-black group-hover:rotate-90 transition-transform">+</span>
+          <span id="reportMainBtnText">Сообщить о проблеме</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ПАНЕЛЬ ФИЛЬТРОВ ПО 5 КАТЕГОРИЯМ ДОРОЖНЫХ ДЕФЕКТОВ -->
+    <div class="max-w-[1600px] mx-auto mt-3 pt-2.5 border-t border-neutral-800/80 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar" id="categoryFilters">
+      <!-- Кнопки категорий рендерятся через JS -->
+    </div>
+  </header>
+
+  <!-- ОСНОВНОЙ РАБОЧИЙ ЭКРАН -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+    
+    <!-- ЛЕВАЯ / ЦЕНТРАЛЬНАЯ КОЛОНКА: ИНТЕРАКТИВНАЯ КАРТА ШЫМКЕНТА (8 колонок) -->
+    <section class="lg:col-span-8 flex flex-col gap-4">
+      <div class="relative w-full h-[460px] sm:h-[540px] lg:h-[620px] rounded-2xl bg-[#0B0B0B] border border-neutral-800 overflow-hidden shadow-2xl select-none" id="mapContainer">
+        
+        <!-- Верхняя плашка координат Шымкента и легенды -->
+        <div class="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+          <div class="glass-panel px-3 py-1.5 rounded-xl flex items-center gap-2.5 text-xs pointer-events-auto border-neutral-800">
+            <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+            <span class="font-mono text-white font-bold">42.3417° N, 69.5901° E</span>
+            <span class="text-neutral-600">|</span>
+            <span class="text-neutral-300" id="mapSectorLabel">Шымкент • <strong class="text-white">Әл-Фараби / Қаратау</strong></span>
+          </div>
+
+          <!-- Легенда критичности -->
+          <div class="glass-panel px-3 py-1.5 rounded-xl flex items-center gap-3 text-[11px] pointer-events-auto border-neutral-800" id="mapLegend">
+            <span class="flex items-center gap-1.5 text-rose-500 font-bold">
+              <span class="w-2 h-2 rounded-full bg-rose-600"></span> <span id="legSos">SOS (Апат қаупі)</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-white font-medium">
+              <span class="w-2 h-2 rounded-full bg-white"></span> <span id="legHigh">Жоғары / Высокий</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-neutral-400 font-medium">
+              <span class="w-2 h-2 rounded-full bg-neutral-400"></span> <span id="legMed">Орташа / Средний</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span id="legFixed">Жөнделді</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- SVG-СХЕМА ГОРОДА ШЫМКЕНТ (Реальные проспекты, реки и школы) -->
+        <svg id="cityMapSvg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+          <defs>
+            <!-- Сетка кварталов -->
+            <pattern id="cityGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#161616" stroke-width="1" />
+            </pattern>
+            <!-- Градиент для радиуса школ (красно-белый радар Шымкента) -->
+            <radialGradient id="schoolRadarGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#E11D48" stop-opacity="0.45" />
+              <stop offset="70%" stop-color="#E11D48" stop-opacity="0.16" />
+              <stop offset="100%" stop-color="#E11D48" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- Глубокий черный фон карты -->
+          <rect width="1000" height="700" fill="#090909" />
+          <rect width="1000" height="700" fill="url(#cityGrid)" />
+
+          <!-- Парковые зоны Шымкента (Дендропарк и Центральный парк) -->
+          <path d="M 60 55 Q 185 35 245 115 T 215 245 Q 110 255 60 175 Z" fill="#121212" stroke="#262626" stroke-width="1.5" />
+          <text id="svgPark1" x="145" y="150" fill="#525252" font-size="11" font-family="Inter" font-weight="700" text-anchor="middle">ДЕНДРОПАРК</text>
+
+          <path d="M 730 460 Q 860 440 940 520 L 940 650 L 710 650 Z" fill="#121212" stroke="#262626" stroke-width="1.5" />
+          <text id="svgPark2" x="830" y="560" fill="#525252" font-size="11" font-family="Inter" font-weight="700" text-anchor="middle">ОРТАЛЫҚ САЯБАҚ</text>
+
+          <!-- Река Кошкарата / Бадам -->
+          <path d="M 0 585 Q 250 535 480 612 T 1000 572" fill="none" stroke="#18181B" stroke-width="22" stroke-linecap="round" />
+          <path d="M 0 585 Q 250 535 480 612 T 1000 572" fill="none" stroke="#3F3F46" stroke-width="1.5" stroke-dasharray="10 8" />
+          <text x="190" y="568" fill="#525252" font-size="9" font-family="JetBrains Mono" font-weight="700">ҚОШҚАРАТА ӨЗЕНІ</text>
+
+          <!-- Жилые кварталы -->
+          <g fill="#111111" stroke="#1F1F1F" stroke-width="1">
+            <rect x="310" y="60" width="140" height="90" rx="8" />
+            <rect x="520" y="60" width="160" height="90" rx="8" />
+            <rect x="740" y="60" width="190" height="120" rx="8" />
+            <rect x="310" y="210" width="140" height="110" rx="8" />
+            <rect x="520" y="210" width="160" height="110" rx="8" />
+            <rect x="740" y="230" width="190" height="140" rx="8" />
+            <rect x="80" y="370" width="170" height="120" rx="8" />
+            <rect x="310" y="380" width="140" height="120" rx="8" />
+            <rect x="520" y="380" width="160" height="120" rx="8" />
+          </g>
+
+          <!-- ВТОРОСТЕПЕННЫЕ УЛИЦЫ ШЫМКЕНТА -->
+          <g stroke="#222222" stroke-width="12" stroke-linecap="round" fill="none">
+            <line x1="280" y1="0" x2="280" y2="700" />
+            <line x1="710" y1="0" x2="710" y2="700" />
+            <line x1="0" y1="180" x2="1000" y2="180" />
+            <line x1="0" y1="520" x2="1000" y2="520" />
+          </g>
+
+          <!-- ГЛАВНЫЕ ПРОСПЕКТЫ ШЫМКЕНТА -->
+          <g stroke="#2E2E2E" stroke-width="20" stroke-linecap="round" fill="none">
+            <!-- Пр. Тауке хана (горизонтальная) -->
+            <line x1="0" y1="350" x2="1000" y2="350" />
+            <!-- Пр. Кунаева / Байдибек би (вертикальная) -->
+            <line x1="485" y1="0" x2="485" y2="700" />
+            <!-- Темирлановское шоссе / Пр. Республики (диагональ) -->
+            <path d="M 120 700 L 485 350 L 860 0" />
+          </g>
+
+          <!-- Осевая разметка и живой поток машин (красно-белая анимация) -->
+          <g fill="none" stroke-linecap="round">
+            <line x1="0" y1="350" x2="1000" y2="350" stroke="#E11D48" stroke-opacity="0.55" stroke-width="1.8" class="traffic-dash" />
+            <line x1="485" y1="0" x2="485" y2="700" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.5" class="traffic-dash-reverse" />
+            <path d="M 120 700 L 485 350 L 860 0" stroke="#E11D48" stroke-opacity="0.4" stroke-width="1.5" class="traffic-dash" />
+          </g>
+
+          <!-- Перекрестки (узлы светофоров) -->
+          <g fill="#0A0A0A" stroke="#E11D48" stroke-width="2" stroke-opacity="0.8">
+            <circle cx="485" cy="350" r="14" />
+            <circle cx="280" cy="350" r="10" />
+            <circle cx="710" cy="350" r="10" />
+            <circle cx="485" cy="180" r="10" />
+            <circle cx="485" cy="520" r="10" />
+          </g>
+
+          <!-- Реальные названия проспектов и улиц Шымкента -->
+          <g fill="#737373" font-size="10" font-family="JetBrains Mono" font-weight="700" letter-spacing="1">
+            <text x="115" y="343">ТӘУКЕ ХАН ДАҢҒЫЛЫ</text>
+            <text x="755" y="343">ТӘУКЕ ХАН ДАҢҒЫЛЫ</text>
+            <text x="498" y="95" transform="rotate(90 498,95)">ҚОНАЕВ ДАҢҒЫЛЫ</text>
+            <text x="498" y="595" transform="rotate(90 498,595)">БӘЙДІБЕК БИ Д-ЛЫ</text>
+            <text x="75" y="173">РЫСҚҰЛОВ КӨШЕСІ</text>
+            <text x="555" y="513">АБАЙ ДАҢҒЫЛЫ</text>
+            <text x="292" y="110" transform="rotate(90 292,110)">РЕСПУБЛИКА Д-ЛЫ</text>
+          </g>
+
+          <!-- СЛОЙ: СЛЕПЫЕ ЗОНЫ У ШКОЛ ШЫМКЕНТА (Радиус 500м) -->
+          <g id="schoolZonesLayer" class="hidden transition-opacity duration-500">
+            <!-- Школа-гимназия №1 им. А.С. Пушкина -->
+            <circle cx="340" cy="350" r="95" fill="url(#schoolRadarGrad)" stroke="#E11D48" stroke-width="1.5" stroke-dasharray="5 5" class="school-zone-active" />
+            <g transform="translate(340, 290)">
+              <rect x="-56" y="-12" width="112" height="22" rx="6" fill="#1A1A1A" stroke="#E11D48" stroke-width="1.2" />
+              <text id="schoolTag1" x="0" y="3" fill="#FFFFFF" font-size="9" font-family="Inter" font-weight="700" text-anchor="middle">🏫 №1 МЕКТЕП (500м)</text>
+            </g>
+
+            <!-- НИШ ХБН Шымкент -->
+            <circle cx="670" cy="180" r="95" fill="url(#schoolRadarGrad)" stroke="#E11D48" stroke-width="1.5" stroke-dasharray="5 5" class="school-zone-active" />
+            <g transform="translate(670, 120)">
+              <rect x="-56" y="-12" width="112" height="22" rx="6" fill="#1A1A1A" stroke="#E11D48" stroke-width="1.2" />
+              <text id="schoolTag2" x="0" y="3" fill="#FFFFFF" font-size="9" font-family="Inter" font-weight="700" text-anchor="middle">🏫 НЗМ / НИШ (500м)</text>
+            </g>
+
+            <!-- Лицей №9 им. О. Жолдасбекова -->
+            <circle cx="485" cy="490" r="95" fill="url(#schoolRadarGrad)" stroke="#E11D48" stroke-width="1.5" stroke-dasharray="5 5" class="school-zone-active" />
+            <g transform="translate(485, 555)">
+              <rect x="-56" y="-12" width="112" height="22" rx="6" fill="#1A1A1A" stroke="#E11D48" stroke-width="1.2" />
+              <text id="schoolTag3" x="0" y="3" fill="#FFFFFF" font-size="9" font-family="Inter" font-weight="700" text-anchor="middle">🏫 №9 ЛИЦЕЙ (500м)</text>
+            </g>
+          </g>
+        </svg>
+
+        <!-- СЛОЙ HTML-МАРКЕРОВ ПОВЕРХ КАРТЫ -->
+        <div id="markersLayer" class="absolute inset-0 z-10 pointer-events-none">
+          <!-- Маркеры добавляются динамически через JS -->
+        </div>
+
+        <!-- ВСПЛЫВАЮЩАЯ КАРТОЧКА ДЕФЕКТА (появляется при клике на маркер) -->
+        <div id="defectDetailCard" class="hidden absolute bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:bottom-4 sm:w-[400px] z-30 glass-panel rounded-2xl p-4 shadow-2xl border border-neutral-700 transition-all duration-300">
+          <!-- Контент рендерится динамически -->
+        </div>
+      </div>
+
+      <!-- НИЖНИЙ БЛОК ПОД КАРТОЙ: ЖИВАЯ ЛЕНТА ПОСЛЕДНИХ СОБЫТИЙ -->
+      <div class="glass-panel rounded-2xl p-4 border border-neutral-800">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span>
+            <h3 class="text-sm font-bold text-white" id="liveFeedTitle">Лента дорожного мониторинга Шымкента</h3>
+          </div>
+          <span class="text-xs font-mono text-neutral-400" id="feedCountLabel">Показано: 8</span>
+        </div>
+        <div id="liveFeedList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
+          <!-- Карточки ленты рендерятся через JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ПРАВАЯ КОЛОНКА: АНАЛИТИКА, СЧЕТЧИКИ И РЕЙТИНГ ПОДРЯДЧИКОВ ШЫМКЕНТА (4 колонки) -->
+    <aside class="lg:col-span-4 flex flex-col gap-4">
+      
+      <!-- 1. ЖИВЫЕ СЧЕТЧИКИ АУДИТА -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="glass-panel rounded-2xl p-4 border border-neutral-800 relative overflow-hidden">
+          <div class="text-xs text-neutral-400 font-medium" id="statTotalLabel">Всего дефектов в базе</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span class="text-2xl sm:text-3xl font-black text-white font-mono" id="statTotal">148</span>
+            <span class="text-[11px] font-mono text-neutral-300" id="statTodayTag">+12 сегодня</span>
+          </div>
+          <div class="mt-2 w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+            <div class="bg-white h-full w-3/4 rounded-full"></div>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-4 border border-rose-600/50 bg-rose-950/20 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-rose-300 font-bold" id="statSosLabel">Критических SOS</span>
+            <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+          </div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span class="text-2xl sm:text-3xl font-black text-rose-500 font-mono" id="statSos">3</span>
+            <span class="text-[11px] font-mono text-rose-300/90" id="statReactionTag">Реакция &lt; 2ч</span>
+          </div>
+          <div class="mt-2 w-full bg-rose-950 h-1.5 rounded-full overflow-hidden">
+            <div class="bg-rose-600 h-full w-1/3 rounded-full"></div>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-4 border border-neutral-800 relative overflow-hidden">
+          <div class="text-xs text-neutral-400 font-medium" id="statWarrantyLabel">На гарантии (Госзакуп)</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span class="text-2xl sm:text-3xl font-black text-white font-mono" id="statWarranty">64%</span>
+            <span class="text-[11px] font-mono text-rose-400" id="statContractorPay">за счет ТОО</span>
+          </div>
+          <p class="mt-1 text-[11px] text-neutral-400" id="statBudgetSave">Экономия бюджета города</p>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-4 border border-neutral-800 relative overflow-hidden">
+          <div class="text-xs text-neutral-400 font-medium" id="statFixedLabel">Починено за месяц</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span class="text-2xl sm:text-3xl font-black text-emerald-400 font-mono" id="statFixed">92</span>
+            <span class="text-[11px] font-mono text-emerald-400">↑ 18%</span>
+          </div>
+          <p class="mt-1 text-[11px] text-neutral-400" id="statVerifiedByCitizens">Подтверждено жителями</p>
+        </div>
+      </div>
+
+      <!-- 2. РЕЙТИНГ ПОДРЯДЧИКОВ И ОТВЕТСТВЕННЫХ СЛУЖБ ШЫМКЕНТА -->
+      <div class="glass-panel rounded-2xl p-4 sm:p-5 border border-neutral-800 flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-rose-600"></span>
+            <span id="contractorPanelTitle">Рейтинг подрядчиков Шымкента</span>
+          </h2>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-600/20 text-rose-400 border border-rose-600/30" id="goszakupBadge">ГОСЗАКУПКИ</span>
+        </div>
+        <p class="text-xs text-neutral-400 mb-4" id="contractorPanelSubtitle">Авто-привязка дефектов по БИН и гарантийным срокам</p>
+
+        <div class="space-y-3 flex-1" id="contractorsList">
+          <!-- Рендерится динамически на выбранном языке -->
+        </div>
+
+        <!-- Нижняя строка панели -->
+        <div class="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+          <span id="eotinishNote">Авто-претензии в eOtinish / iKomek 109</span>
+          <span class="text-rose-500 font-mono font-bold" id="activeStatusBadge">LIVE</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ПОШАГОВЫЙ СИМУЛЯТОР «СООБЩИТЬ О ПРОБЛЕМЕ» С AI-СКАНЕРОМ -->
+  <div id="reportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md">
+    <div class="w-full max-w-xl glass-panel rounded-3xl border border-neutral-700 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Шапка модального окна -->
+      <div class="px-5 py-4 border-b border-neutral-800 flex items-center justify-between bg-neutral-950/90">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-rose-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-rose-600/30">AI</div>
+          <div>
+            <h3 class="text-base font-bold text-white" id="modalTitle">Зафиксировать дорожный дефект</h3>
+            <p class="text-xs text-neutral-400" id="modalSubtitle">15 секунд • Авто-поиск подрядчика по GPS</p>
+          </div>
+        </div>
+        <button onclick="closeReportModal()" class="w-8 h-8 rounded-xl bg-neutral-900 hover:bg-rose-600 text-neutral-400 hover:text-white flex items-center justify-center transition-colors border border-neutral-800">
+          ✕
+        </button>
+      </div>
+
+      <!-- Индикатор шагов -->
+      <div class="px-5 py-2.5 bg-neutral-950 border-b border-neutral-800 grid grid-cols-3 gap-2 text-xs font-medium">
+        <div id="stepBadge1" class="flex items-center gap-1.5 text-rose-500 font-bold">
+          <span class="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[11px] font-extrabold">1</span>
+          <span id="step1Label">Объект</span>
+        </div>
+        <div id="stepBadge2" class="flex items-center gap-1.5 text-neutral-500">
+          <span class="w-5 h-5 rounded-full bg-neutral-800 text-neutral-400 flex items-center justify-center text-[11px] font-bold">2</span>
+          <span id="step2Label">AI-сканер</span>
+        </div>
+        <div id="stepBadge3" class="flex items-center gap-1.5 text-neutral-500">
+          <span class="w-5 h-5 rounded-full bg-neutral-800 text-neutral-400 flex items-center justify-center text-[11px] font-bold">3</span>
+          <span id="step3Label">На карту</span>
+        </div>
+      </div>
+
+      <!-- Тело модального окна -->
+      <div class="p-5 overflow-y-auto flex-1">
+        
+        <!-- ШАГ 1: ВЫБОР КАТЕГОРИИ И УТОЧНЕНИЕ В 1 ТАП -->
+        <div id="modalStep1" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-2" id="modalCatSelectLabel">1. Выберите тип дорожного элемента</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="modalCategoryGrid">
+              <!-- Рендерится через JS -->
+            </div>
+          </div>
+
+          <!-- Динамическое уточнение в 1 тап -->
+          <div class="p-3.5 rounded-2xl bg-neutral-950 border border-neutral-800">
+            <label class="block text-xs font-bold text-rose-400 mb-2" id="subOptionLabel">2. Уточните характер повреждения (в 1 тап):</label>
+            <div class="flex flex-wrap gap-2" id="subOptionsContainer">
+              <!-- Рендерится через JS -->
+            </div>
+          </div>
+
+          <!-- Выбор адреса в Шымкенте -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5" id="modalLocLabel">3. Геопозиция в Шымкенте (GPS зафиксирован)</label>
+            <select id="locationSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-700 text-sm text-white focus:outline-none focus:border-rose-500">
+              <!-- Заполняется на выбранном языке -->
+            </select>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button onclick="startAiScanStep()" class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition-all flex items-center justify-center gap-2">
+              <span id="startScanBtnText">Запустить AI-проверку фото</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ШАГ 2: АНИМАЦИЯ КРАСНОГО ЛАЗЕРНОГО AI-СКАНЕРА -->
+        <div id="modalStep2" class="hidden space-y-4">
+          <!-- Реальная фотофиксация дефекта -->
+          <div class="rounded-2xl border border-neutral-800 bg-neutral-950 p-3 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs font-bold text-white">КАМЕРА • ФОТОАНАЛИЗ</div>
+                <div class="text-[10px] text-neutral-400">Снимите дефект с безопасного расстояния</div>
+              </div>
+              <span class="text-[10px] font-mono text-rose-400">SHYM_CAM</span>
+            </div>
+            <div class="relative rounded-xl overflow-hidden bg-black min-h-40 flex items-center justify-center">
+              <div id="cameraPlaceholder" class="text-center text-xs text-neutral-500 p-5">
+                <div class="text-3xl mb-2">📷</div>
+                Камера выключена. Включите её или загрузите фотографию.
+              </div>
+              <video id="roadCameraVideo" class="hidden w-full max-h-64 object-contain" autoplay playsinline muted></video>
+              <img id="roadPhotoPreview" class="hidden w-full max-h-64 object-contain" alt="Фото дорожного дефекта">
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="startRoadCamera()" class="px-3 py-2 rounded-lg text-xs font-bold bg-neutral-800 hover:bg-neutral-700 border border-neutral-700">Включить камеру</button>
+              <button type="button" onclick="captureRoadPhoto()" class="px-3 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500">Сделать снимок</button>
+              <label class="px-3 py-2 rounded-lg text-xs font-bold bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 cursor-pointer">
+                Загрузить фото
+                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleRoadPhotoUpload(event)">
+              </label>
+              <button type="button" onclick="stopRoadCamera()" class="px-3 py-2 rounded-lg text-xs font-bold bg-neutral-900 border border-neutral-800">Выключить</button>
+            </div>
+            <div id="cameraStatus" class="text-[10px] text-neutral-400">Камера запускается только после разрешения пользователя.</div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="text-[10px] text-neutral-400">Размер ориентира (см)
+                <input id="scaleReferenceCm" type="number" min="1" placeholder="Например, 30" class="mt-1 w-full rounded-lg bg-black border border-neutral-700 px-2 py-2 text-xs text-white">
+              </label>
+              <label class="text-[10px] text-neutral-400">Измеренная глубина (см, если известна)
+                <input id="manualDepthCm" type="number" min="0" step="0.5" placeholder="Необязательно" class="mt-1 w-full rounded-lg bg-black border border-neutral-700 px-2 py-2 text-xs text-white">
+              </label>
+            </div>
+            <button id="analyzePhotoBtn" type="button" onclick="analyzeRoadPhoto()" disabled class="w-full py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed">Анализировать фотографию</button>
+            <div id="roadAuditDetailedReport" class="hidden rounded-xl border border-neutral-800 bg-black/60 p-3"></div>
+          </div>
+          <div class="relative h-52 rounded-2xl bg-neutral-950 border border-rose-600/60 overflow-hidden flex items-center justify-center ai-grid-overlay">
+            <!-- Стилизованный SVG-снимок дефекта -->
+            <div id="scanVisualPreview" class="w-full h-full flex items-center justify-center"></div>
+            
+            <!-- Красная лазерная линия сканера -->
+            <div class="ai-laser-line" id="aiLaser"></div>
+
+            <!-- Рамка детекции YOLOv8 -->
+            <div id="detectionBox" class="hidden absolute border-2 border-rose-500 bg-rose-600/15 rounded-lg px-2 py-1 text-[10px] font-mono font-bold text-white shadow-lg" style="top: 25%; left: 26%; width: 48%; height: 50%;">
+              <span class="bg-rose-600 text-white px-1.5 py-0.5 rounded text-[9px]" id="detectionLabel">DEFECT 98.7%</span>
+            </div>
+
+            <!-- Телеметрия в углах -->
+            <div class="absolute top-2.5 left-2.5 text-[10px] font-mono text-white bg-black/80 border border-neutral-800 px-2 py-0.5 rounded">
+              SHYM_CAM • GPS_LOCKED
+            </div>
+            <div class="absolute bottom-2.5 right-2.5 text-[10px] font-mono text-rose-400 bg-black/80 border border-neutral-800 px-2 py-0.5 rounded" id="scanProgressText">
+              AI... 0%
+            </div>
+          </div>
+
+          <!-- Пошаговый лог AI-проверки -->
+          <div class="space-y-1.5 font-mono text-xs bg-neutral-950 p-3.5 rounded-xl border border-neutral-800" id="aiConsoleLog"></div>
+
+          <!-- Итоговая карточка авто-тикета -->
+          <div id="aiResultCard" class="hidden p-3.5 rounded-xl bg-rose-950/25 border border-rose-600/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white" id="ticketFormedTitle">✓ Авто-тикет сформирован</span>
+              <span class="text-[11px] font-mono text-rose-400 font-bold" id="ticketIdLabel">#SQ-2026-894</span>
+            </div>
+            <p class="text-xs text-neutral-200" id="ticketSummaryText"></p>
+            <p class="text-[11px] text-rose-300 font-semibold" id="ticketContractorText"></p>
+          </div>
+
+          <div class="pt-1 flex items-center justify-between gap-3">
+            <button onclick="resetToStep1()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800" id="modalBackBtn">
+              ← Назад
+            </button>
+            <button id="publishPointBtn" disabled onclick="publishNewDefect()" class="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-rose-600/25 transition-all">
+              <span id="publishBtnText">Опубликовать на карту Шымкента</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ (TOAST) -->
+  <div id="toastNotification" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-4 transition-all duration-300">
+    <div class="glass-panel px-4 py-2.5 rounded-full border border-rose-600/60 shadow-xl flex items-center gap-2 text-xs font-bold text-white">
+      <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+      <span id="toastMessage">Действие выполнено</span>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. ДВУЯЗЫЧНЫЙ СЛОВАРЬ ИНТЕРФЕЙСА (ҚАЗ / РУС)
+    // =========================================================================
+    let currentLang = 'ru'; // 'ru' или 'kz'
+
+    const UI_TEXT = {
+      ru: {
+        headerSubtitle: 'Гражданский аудит дорог и инфраструктуры Шымкента',
+        schoolZoneBtn: 'Слепые зоны у школ (500м)',
+        liveSimOff: 'Демо-поток: ВЫКЛ',
+        liveSimOn: 'Демо-поток: ВКЛ',
+        reportMainBtn: 'Сообщить о проблеме',
+        mapSector: 'Шымкент • <strong class="text-white">Әл-Фараби / Қаратау</strong>',
+        legSos: 'SOS (Угроза ДТП)',
+        legHigh: 'Высокий',
+        legMed: 'Средний',
+        legFixed: 'Починено',
+        park1: 'ДЕНДРОПАРК',
+        park2: 'ЦЕНТРАЛЬНЫЙ ПАРК',
+        school1: '🏫 ШКОЛА №1 (500м)',
+        school2: '🏫 НИШ ХБН (500м)',
+        school3: '🏫 ЛИЦЕЙ №9 (500м)',
+        liveFeedTitle: 'Лента дорожного мониторинга Шымкента',
+        feedShown: (n) => `Показано: ${n} объектов`,
+        statTotalLabel: 'Всего дефектов в базе',
+        statTodayTag: '+12 сегодня',
+        statSosLabel: 'Критических SOS',
+        statReactionTag: 'Реакция < 2ч',
+        statWarrantyLabel: 'На гарантии (Госзакуп)',
+        statContractorPay: 'за счет ТОО',
+        statBudgetSave: 'Экономия бюджета города',
+        statFixedLabel: 'Починено за месяц',
+        statVerifiedByCitizens: 'Подтверждено жителями',
+        contractorPanelTitle: 'Рейтинг подрядчиков Шымкента',
+        goszakupBadge: 'ГОСЗАКУПКИ',
+        contractorPanelSubtitle: 'Авто-привязка дефектов по БИН и гарантийным срокам',
+        eotinishNote: 'Авто-претензии в eOtinish / iKomek 109',
+        modalTitle: 'Зафиксировать дорожный дефект',
+        modalSubtitle: '15 секунд • Авто-поиск подрядчика по GPS',
+        step1: 'Объект',
+        step2: 'AI-сканер',
+        step3: 'На карту',
+        modalCatSelect: '1. Выберите тип дорожного элемента',
+        subOptionLabel: '2. Уточните характер повреждения (в 1 тап):',
+        modalLocLabel: '3. Геопозиция в Шымкенте (GPS зафиксирован)',
+        startScanBtn: 'Запустить AI-проверку фото',
+        modalBackBtn: '← Назад',
+        publishBtn: 'Опубликовать на карту Шымкента',
+        ticketFormed: '✓ Авто-тикет сформирован',
+        detailAddress: 'Адрес:',
+        detailResp: 'Ответственный:',
+        detailWarranty: 'Статус гарантии:',
+        detailAiVerdict: (conf) => `AI-вердикт (точность ${conf}):`,
+        confirmRepairBtn: '✓ Подтвердить, что починили',
+        repairConfirmedBadge: (c) => `✓ Ремонт подтвержден (${c} жит.)`,
+        toastSchoolOn: 'Подсвечены радиусы 500м вокруг школ Шымкента со стертой разметкой',
+        toastSimOff: 'Демо-поток остановлен',
+        toastSimOn: 'Запущен симулятор поступления заявок от жителей Шымкента',
+        toastConfirmed: (id) => `Статус ${id} обновлен: Ремонт подтвержден!`,
+        toastUpvoted: 'Ваш голос прикреплен к претензии подрядчику',
+        toastPublished: (id) => `Точка ${id} опубликована на карте Шымкента!`,
+        aiLog1: '▸ Загрузка снимка в нейросеть ShymVision-YOLOv8...',
+        aiLog2: (cat, sub) => `▸ Объект распознан: <span class="text-white font-bold">${cat}</span> (${sub})`,
+        aiLog3: '▸ Запрос в реестр госзакупок РК по GPS: найдена запись!',
+        aiLog4: '▸ Сформирована претензия и маршрут для бригады.',
+        scanWearText: 'ИЗНОС РАЗМЕТКИ: 86%',
+        scanManholeText: 'ОТКРЫТЫЙ ЛЮК [В]'
+      },
+      kz: {
+        headerSubtitle: 'Шымкент қаласының жолдары мен инфрақұрылымына азаматтық аудит',
+        schoolZoneBtn: 'Мектеп маңындағы соқыр аймақтар (500м)',
+        liveSimOff: 'Тікелей эфир: ӨШІРУЛІ',
+        liveSimOn: 'Тікелей эфир: ҚОСУЛЫ',
+        reportMainBtn: 'Мәселе туралы хабарлау',
+        mapSector: 'Шымкент • <strong class="text-white">Әл-Фараби / Қаратау</strong>',
+        legSos: 'SOS (Апат қаупі)',
+        legHigh: 'Жоғары',
+        legMed: 'Орташа',
+        legFixed: 'Жөнделді',
+        park1: 'ДЕНДРОСАЯБАҚ',
+        park2: 'ОРТАЛЫҚ САЯБАҚ',
+        school1: '🏫 №1 МЕКТЕП (500м)',
+        school2: '🏫 НЗМ / НИШ (500м)',
+        school3: '🏫 №9 ЛИЦЕЙ (500м)',
+        liveFeedTitle: 'Шымкент жол мониторингінің тікелей лентасы',
+        feedShown: (n) => `Көрсетілді: ${n} нысан`,
+        statTotalLabel: 'Базадағы барлық ақаулар',
+        statTodayTag: '+12 бүгін',
+        statSosLabel: 'Шұғыл SOS',
+        statReactionTag: 'Жауап беру < 2сағ',
+        statWarrantyLabel: 'Кепілдікте (Мемсатып алу)',
+        statContractorPay: 'ЖШС есебінен',
+        statBudgetSave: 'Қала бюджетін үнемдеу',
+        statFixedLabel: 'Осы айда жөнделді',
+        statVerifiedByCitizens: 'Тұрғындар растады',
+        contractorPanelTitle: 'Шымкент мердігерлерінің рейтингі',
+        goszakupBadge: 'МЕМСАТЫП АЛУ',
+        contractorPanelSubtitle: 'БСН және кепілдік мерзімі бойынша авто-тіркеу',
+        eotinishNote: 'eOtinish / iKomek 109 жүйесіне авто-шағым',
+        modalTitle: 'Жол ақауын тіркеу',
+        modalSubtitle: '15 секунд • GPS арқылы мердігерді авто-анықтау',
+        step1: 'Нысан',
+        step2: 'AI-сканер',
+        step3: 'Картаға',
+        modalCatSelect: '1. Жол элементінің түрін таңдаңыз',
+        subOptionLabel: '2. Ақау сипатын нақтылаңыз (1 рет басу):',
+        modalLocLabel: '3. Шымкенттегі геопозиция (GPS бекітілді)',
+        startScanBtn: 'Фотоны AI-тексеруді бастау',
+        modalBackBtn: '← Артқа',
+        publishBtn: 'Шымкент картасына жариялау',
+        ticketFormed: '✓ Авто-тикет жасалды',
+        detailAddress: 'Мекенжайы:',
+        detailResp: 'Жауапты мекеме:',
+        detailWarranty: 'Кепілдік мәртебесі:',
+        detailAiVerdict: (conf) => `AI-қорытынды (дәлдігі ${conf}):`,
+        confirmRepairBtn: '✓ Жөнделгенін растау',
+        repairConfirmedBadge: (c) => `✓ Жөндеу расталды (${c} тұрғын)`,
+        toastSchoolOn: 'Шымкент мектептерінің маңындағы 500м соқыр аймақтар көрсетілді',
+        toastSimOff: 'Тікелей эфир тоқтатылды',
+        toastSimOn: 'Шымкент тұрғындарынан өтінімдер ағыны іске қосылды',
+        toastConfirmed: (id) => `${id} мәртебесі жаңартылды: Жөндеу расталды!`,
+        toastUpvoted: 'Сіздің дауысыңыз мердігерге жіберілетін шағымға тіркелді',
+        toastPublished: (id) => `${id} нүктесі Шымкент картасына жарияланды!`,
+        aiLog1: '▸ Суретті ShymVision-YOLOv8 нейрожелісіне жүктеу...',
+        aiLog2: (cat, sub) => `▸ Нысан анықталды: <span class="text-white font-bold">${cat}</span> (${sub})`,
+        aiLog3: '▸ GPS бойынша Мемсатып алу тізілімінен сұрау: жазба табылды!',
+        aiLog4: '▸ Мердігерге шағым мен бригада бағыты жасалды.',
+        scanWearText: 'ЖОЛ ТАҢБАСЫ ӨШКЕН: 86%',
+        scanManholeText: 'АШЫҚ ҚҰДЫҚ [В]'
+      }
+    };
+
+    // =========================================================================
+    // 2. КОНФИГУРАЦИЯ 5 КАТЕГОРИЙ ДОРОЖНЫХ ДЕФЕКТОВ (ҚАЗ / РУС)
+    // =========================================================================
+    const CATEGORIES = [
+      {
+        id: 'all',
+        name: { ru: 'Все дефекты', kz: 'Барлық ақаулар' },
+        shortName: { ru: 'Все', kz: 'Барлығы' },
+        icon: '🗺️',
+        subOptions: { ru: [], kz: [] }
+      },
+      {
+        id: 'marking',
+        name: { ru: '1. Дорожная разметка', kz: '1. Жол таңбалары' },
+        shortName: { ru: 'Разметка', kz: 'Жол таңбасы' },
+        icon: '🦓',
+        subOptions: {
+          ru: [
+            'Стертая «зебра» у пешеходного перехода',
+            'Исчезла сплошная линия (износ шинами >80%)',
+            'Не видна стоп-линия перед светофором',
+            'Стерта разметка полос движения'
+          ],
+          kz: [
+            'Жаяу жүргіншілер өткеліндегі өшкен «зебра»',
+            'Тұтас сызық өшіп қалған (тозу >80%)',
+            'Бағдаршам алдындағы тоқтау сызығы көрінбейді',
+            'Қозғалыс жолақтарының сызығы өшкен'
+          ]
+        },
+        defaultService: { ru: 'СМЭУ Шымкент (Отдел разметки)', kz: 'Шымкент ММЭБ (Жол таңбасы бөлімі)' },
+        warrantyInfo: { ru: 'Требуется обновление термопластиком по СТ РК', kz: 'ҚР СТ бойынша термопластикпен жаңарту қажет' }
+      },
+      {
+        id: 'traffic_light',
+        name: { ru: '2. Светофоры', kz: '2. Бағдаршамдар' },
+        shortName: { ru: 'Светофоры', kz: 'Бағдаршам' },
+        icon: '🚦',
+        subOptions: {
+          ru: [
+            'Не горит красный сигнал (SOS)',
+            'Светофор развернуло ветром',
+            'Мигает желтым в час пик',
+            'Сбит таймер обратного отсчета'
+          ],
+          kz: [
+            'Қызыл шам жанбай тұр (SOS)',
+            'Бағдаршам желден бұрылып кеткен',
+            'Қарбалас уақытта сары шам жыпылықтайды',
+            'Кері санақ таймері істен шыққан'
+          ]
+        },
+        defaultService: { ru: 'СМЭУ Шымкент • Дежурная бригада (SOS)', kz: 'Шымкент ММЭБ • Кезекші бригада (SOS)' },
+        warrantyInfo: { ru: 'Критический приоритет: выезд в течение 60 мин', kz: 'Шұғыл басымдық: 60 минут ішінде шығу' }
+      },
+      {
+        id: 'sign',
+        name: { ru: '3. Дорожные знаки', kz: '3. Жол белгілері' },
+        shortName: { ru: 'Знаки', kz: 'Жол белгісі' },
+        icon: '🛑',
+        subOptions: {
+          ru: [
+            'Знак закрыт ветками деревьев (>40%)',
+            'Погнут или развернут после ДТП',
+            'Выцвела светоотражающая пленка',
+            'Отсутствует знак «Пешеходный переход»'
+          ],
+          kz: [
+            'Белгіні ағаш бұтақтары жауып тұр (>40%)',
+            'ЖКО-дан кейін майысқан немесе бұрылған',
+            'Жарық шағылыстырғыш қабаты өңіп кеткен',
+            '«Жаяу жүргіншілер өткелі» белгісі жоқ'
+          ]
+        },
+        defaultService: { ru: 'СМЭУ / Управление развития комфортной среды', kz: 'ММЭБ / Жайлы ортаны дамыту басқармасы' },
+        warrantyInfo: { ru: 'Авто-маршрутизация по типу препятствия', kz: 'Кедергі түріне қарай авто-бағыттау' }
+      },
+      {
+        id: 'bus_stop',
+        name: { ru: '4. Остановки и тротуары', kz: '4. Аялдамалар мен тротуарлар' },
+        shortName: { ru: 'Остановки', kz: 'Аялдамалар' },
+        icon: '🚏',
+        subOptions: {
+          ru: [
+            'Разбито стекло павильона',
+            'Сломана скамейка или крыша',
+            'Разрушена тактильная плитка / пандус',
+            'Нет расписания и освещения'
+          ],
+          kz: [
+            'Аялдама павильонының әйнегі сынған',
+            'Орындық немесе шатыры бүлінген',
+            'Тактильді плитка / пандус бұзылған',
+            'Кесте мен жарықтандыру жоқ'
+          ]
+        },
+        defaultService: { ru: 'Акимат района / Балансодержатель', kz: 'Аудан әкімдігі / Теңгерім ұстаушы' },
+        warrantyInfo: { ru: 'Гарантия подрядчика павильонов до 2027 г.', kz: 'Павильон мердігерінің кепілдігі 2027 ж. дейін' }
+      },
+      {
+        id: 'road_manhole',
+        name: { ru: '5. Полотно и люки', kz: '5. Жол жамылғысы мен құдықтар' },
+        shortName: { ru: 'Ямы и люки', kz: 'Шұңқыр мен люк' },
+        icon: '🕳️',
+        subOptions: {
+          ru: [
+            'Открытый люк [В] Водоканал (SOS)',
+            'Просевший люк [К] Канализация',
+            'Люк теплосети [ТС] без крышки',
+            'Глубокая яма / колейность асфальта'
+          ],
+          kz: [
+            'Ашық құдық [В] Су арнасы (SOS)',
+            'Шөгіп кеткен құдық [К] Кәріз',
+            'Қақпағы жоқ жылу желісі құдығы [ТС]',
+            'Терең шұңқыр / асфальттың ойылуы'
+          ]
+        },
+        defaultService: { ru: 'ТОО «ОңтүстікЖолСтрой» / Водоканал', kz: '«ОңтүстікЖолСтрой» ЖШС / Су арнасы' },
+        warrantyInfo: { ru: 'Участок на гарантии по госзакупкам до 2028 г.', kz: 'Учаске мемсатып алу бойынша 2028 ж. дейін кепілдікте' }
+      }
+    ];
+
+    // =========================================================================
+    // 3. РЕЙТИНГ ПОДРЯДЧИКОВ ШЫМКЕНТА (ҚАЗ / РУС)
+    // =========================================================================
+    const CONTRACTORS_DATA = [
+      {
+        name: { ru: 'СМЭУ Шымкент (Светофоры и разметка)', kz: 'Шымкент ММЭБ (Бағдаршам мен таңба)' },
+        badge: '94% KPI',
+        badgeType: 'good',
+        leftMeta: { ru: 'Ср. время реакции: <strong class="text-white">1.4 часа</strong>', kz: 'Орташа реакция: <strong class="text-white">1.4 сағат</strong>' },
+        rightMeta: { ru: 'Активных: 2', kz: 'Белсенді: 2' },
+        percent: 94
+      },
+      {
+        name: { ru: 'ТОО «ОңтүстікЖолСтрой»', kz: '«ОңтүстікЖолСтрой» ЖШС' },
+        badge: { ru: 'Гарантия до 2028', kz: 'Кепілдік 2028 дейін' },
+        badgeType: 'warn',
+        leftMeta: { ru: 'Участок: Пр. Тауке хана', kz: 'Учаске: Тәуке хан д-лы' },
+        rightMeta: { ru: 'Претензий: 5', kz: 'Шағымдар: 5' },
+        percent: 64
+      },
+      {
+        name: { ru: 'ТОО «Водные ресурсы-Маркетинг» [В]/[К]', kz: '«Су ресурстары-Маркетинг» ЖШС [В]/[К]' },
+        badge: '88% KPI',
+        badgeType: 'good',
+        leftMeta: { ru: 'Закрытие люков: <strong class="text-white">50 мин</strong>', kz: 'Құдықты жабу: <strong class="text-white">50 мин</strong>' },
+        rightMeta: { ru: 'Активных: 1', kz: 'Белсенді: 1' },
+        percent: 88
+      },
+      {
+        name: { ru: 'ТОО «ШымкентДорСервис»', kz: '«ШымкентДорСервис» ЖШС' },
+        badge: { ru: '41% KPI • РИСК', kz: '41% KPI • ТӘУЕКЕЛ' },
+        badgeType: 'bad',
+        leftMeta: { ru: 'Просрочено гарантийных ям: 7', kz: 'Мерзімі өткен шұңқырлар: 7' },
+        rightMeta: { ru: 'Иск в ГАСК', kz: 'МСҚБ-ға талап' },
+        percent: 41
+      }
+    ];
+
+    // =========================================================================
+    // 4. НАЧАЛЬНЫЙ НАБОР ДЕФЕКТОВ НА КАРТЕ ШЫМКЕНТА (ДВУЯЗЫЧНЫЙ)
+    // =========================================================================
+    let defects = [
+      {
+        id: 'SQ-101',
+        category: 'traffic_light',
+        title: { ru: 'Не горит красный сигнал светофора', kz: 'Бағдаршамның қызыл шамы жанбай тұр' },
+        subType: { ru: 'Секция по направлению на север (перекресток)', kz: 'Солтүстік бағыттағы секция (қиылыс)' },
+        address: { ru: 'Пр. Тауке хана / пр. Кунаева', kz: 'Тәуке хан д-лы / Қонаев д-лы' },
+        x: 48.5,
+        y: 50.0,
+        severity: 'sos',
+        statusText: { ru: 'SOS • Бригада выехала', kz: 'SOS • Бригада жолға шықты' },
+        aiConfidence: '99.2%',
+        aiNote: { ru: 'Опасность лобового столкновения. Приоритет №1.', kz: 'Соқтығысу қаупі жоғары. №1 басымдық.' },
+        responsible: { ru: 'СМЭУ Шымкент • Дежурная служба', kz: 'Шымкент ММЭБ • Кезекші қызмет' },
+        warranty: { ru: 'Муниципальный баланс (Реакция < 1ч)', kz: 'Қалалық теңгерім (Реакция < 1сағ)' },
+        timeAgo: { ru: '14 мин назад', kz: '14 мин бұрын' },
+        nearSchool: false,
+        confirmations: 14
+      },
+      {
+        id: 'SQ-102',
+        category: 'marking',
+        title: { ru: 'Стертая «зебра» у школы №1', kz: '№1 мектеп маңындағы «зебра» өшіп қалған' },
+        subType: { ru: 'Износ краски от шин составил 88%', kz: 'Дөңгелектерден бояудың тозуы 88%' },
+        address: { ru: 'Пр. Тауке хана, 34 (Пешеходный переход)', kz: 'Тәуке хан д-лы, 34 (Жаяу жүргіншілер өткелі)' },
+        x: 34.0,
+        y: 50.0,
+        severity: 'medium',
+        statusText: { ru: 'В плане на покраску', kz: 'Бояу жоспарына енгізілді' },
+        aiConfidence: '96.5%',
+        aiNote: { ru: 'Слепая зона в радиусе 500м от Школы №1.', kz: '№1 мектептен 500м радиустағы соқыр аймақ.' },
+        responsible: { ru: 'СМЭУ Шымкент (Отдел разметки)', kz: 'Шымкент ММЭБ (Жол таңбасы бөлімі)' },
+        warranty: { ru: 'Требуется термопластик (СТ РК 1124)', kz: 'Термопластик қажет (ҚР СТ 1124)' },
+        timeAgo: { ru: '1 час назад', kz: '1 сағат бұрын' },
+        nearSchool: true,
+        confirmations: 29
+      },
+      {
+        id: 'SQ-103',
+        category: 'road_manhole',
+        title: { ru: 'Открытый люк [В] на проезжей части', kz: 'Жолдың жүру бөлігіндегі ашық құдық [В]' },
+        subType: { ru: 'Крышка отсутствует, глубина шахты 2.4м', kz: 'Қақпағы жоқ, шахта тереңдігі 2.4м' },
+        address: { ru: 'Ул. Рыскулова / пр. Республики', kz: 'Рысқұлов к-сі / Республика д-лы' },
+        x: 28.0,
+        y: 25.7,
+        severity: 'sos',
+        statusText: { ru: 'SOS • Ограждено', kz: 'SOS • Қоршау қойылды' },
+        aiConfidence: '98.8%',
+        aiNote: { ru: 'Идентифицирована маркировка [В] — Водоканал.', kz: '[В] таңбасы анықталды — Су арнасы.' },
+        responsible: { ru: 'ТОО «Водные ресурсы-Маркетинг»', kz: '«Су ресурстары-Маркетинг» ЖШС' },
+        warranty: { ru: 'Аварийный выезд назначен', kz: 'Апаттық бригада тағайындалды' },
+        timeAgo: { ru: '28 мин назад', kz: '28 мин бұрын' },
+        nearSchool: false,
+        confirmations: 11
+      },
+      {
+        id: 'SQ-104',
+        category: 'sign',
+        title: { ru: 'Знак «Уступи дорогу» закрыт ветками', kz: '«Жол беріңіз» белгісін бұтақтар жауып тұр' },
+        subType: { ru: 'Видимость знака перекрыта листвой на 75%', kz: 'Белгінің көрінуі жапырақтармен 75% жабылған' },
+        address: { ru: 'Пр. Байдибек би / пр. Абая', kz: 'Бәйдібек би д-лы / Абай д-лы' },
+        x: 48.5,
+        y: 74.3,
+        severity: 'high',
+        statusText: { ru: 'Передано на обрезку', kz: 'Бұтақ кесуге жіберілді' },
+        aiConfidence: '94.1%',
+        aiNote: { ru: 'Авто-заявка на санитарную обрезку веток.', kz: 'Ағаш бұтақтарын санитарлық кесуге авто-өтінім.' },
+        responsible: { ru: 'Управление комфортной среды + СМЭУ', kz: 'Жайлы орта басқармасы + ММЭБ' },
+        warranty: { ru: 'Срок исполнения: 24 часа', kz: 'Орындау мерзімі: 24 сағат' },
+        timeAgo: { ru: '3 часа назад', kz: '3 сағат бұрын' },
+        nearSchool: true,
+        confirmations: 17
+      },
+      {
+        id: 'SQ-105',
+        category: 'bus_stop',
+        title: { ru: 'Разбито боковое стекло остановки', kz: 'Аялдаманың бүйірлік әйнегі сынған' },
+        subType: { ru: 'Осколки на тротуаре, повреждена скамейка', kz: 'Тротуарда әйнек сынықтары, орындық бүлінген' },
+        address: { ru: 'Пр. Абая, ост. «Центральный парк»', kz: 'Абай д-лы, «Орталық саябақ» аялдамасы' },
+        x: 71.0,
+        y: 74.3,
+        severity: 'medium',
+        statusText: { ru: 'Заявка принята', kz: 'Өтінім қабылданды' },
+        aiConfidence: '97.0%',
+        aiNote: { ru: 'Остановка на гарантийном обслуживании.', kz: 'Аялдама кепілдік қызмет көрсетуде.' },
+        responsible: { ru: 'ТОО «Shymkent Bus Stop»', kz: '«Shymkent Bus Stop» ЖШС' },
+        warranty: { ru: 'Гарантия по договору №412 до 2027 г.', kz: '№412 шарт бойынша кепілдік 2027 ж. дейін' },
+        timeAgo: { ru: '5 часов назад', kz: '5 сағат бұрын' },
+        nearSchool: false,
+        confirmations: 8
+      },
+      {
+        id: 'SQ-106',
+        category: 'road_manhole',
+        title: { ru: 'Разрушение асфальта (яма 1.2м)', kz: 'Асфальттың бұзылуы (шұңқыр 1.2м)' },
+        subType: { ru: 'Глубина 11 см, угроза повреждения колес', kz: 'Тереңдігі 11 см, дөңгелектерге қауіпті' },
+        address: { ru: 'Пр. Тауке хана, 88', kz: 'Тәуке хан д-лы, 88' },
+        x: 71.0,
+        y: 50.0,
+        severity: 'high',
+        statusText: { ru: 'Претензия подрядчику', kz: 'Мердігерге шағым жіберілді' },
+        aiConfidence: '95.4%',
+        aiNote: { ru: 'Участок ремонтировался 8 месяцев назад.', kz: 'Учаске 8 ай бұрын жөнделген.' },
+        responsible: { ru: 'ТОО «ОңтүстікЖолСтрой»', kz: '«ОңтүстікЖолСтрой» ЖШС' },
+        warranty: { ru: 'ГАРАНТИЯ ДО 2028 Г. (Ремонт за счет ТОО)', kz: 'КЕПІЛДІК 2028 Ж. ДЕЙІН (ЖШС есебінен)' },
+        timeAgo: { ru: 'Вчера', kz: 'Кеше' },
+        nearSchool: false,
+        confirmations: 36
+      },
+      {
+        id: 'SQ-107',
+        category: 'marking',
+        title: { ru: 'Обновлена стоп-линия и переход', kz: 'Тоқтау сызығы мен өткел жаңартылды' },
+        subType: { ru: 'Нанесен холодный пластик со светоотражением', kz: 'Жарық шағылыстыратын суық пластик салынды' },
+        address: { ru: 'Ул. Рыскулова (возле НИШ ХБН)', kz: 'Рысқұлов к-сі (НЗМ ХББ жанында)' },
+        x: 67.0,
+        y: 25.7,
+        severity: 'fixed',
+        statusText: { ru: 'Починено и подтверждено', kz: 'Жөнделді және расталды' },
+        aiConfidence: '99.0%',
+        aiNote: { ru: 'Контрастность разметки 98% — норма.', kz: 'Таңбаның контрасттылығы 98% — қалыпты.' },
+        responsible: { ru: 'СМЭУ Шымкент', kz: 'Шымкент ММЭБ' },
+        warranty: { ru: 'Принято 21 жителем', kz: '21 тұрғын қабылдады' },
+        timeAgo: { ru: '2 дня назад', kz: '2 күн бұрын' },
+        nearSchool: true,
+        confirmations: 21
+      },
+      {
+        id: 'SQ-108',
+        category: 'sign',
+        title: { ru: 'Погнута стойка знака «Пешеходный переход»', kz: '«Жаяу жүргіншілер өткелі» белгісі майысқан' },
+        subType: { ru: 'Наклон опоры 35 градусов', kz: 'Тіректің көлбеуі 35 градус' },
+        address: { ru: 'Пр. Кунаева, 15', kz: 'Қонаев д-лы, 15' },
+        x: 48.5,
+        y: 25.7,
+        severity: 'high',
+        statusText: { ru: 'В работе у бригады', kz: 'Бригада жұмыс үстінде' },
+        aiConfidence: '93.8%',
+        aiNote: { ru: 'Требуется замена стойки.', kz: 'Тіректі ауыстыру қажет.' },
+        responsible: { ru: 'СМЭУ Шымкент', kz: 'Шымкент ММЭБ' },
+        warranty: { ru: 'В графике на сегодня', kz: 'Бүгінгі кестеде' },
+        timeAgo: { ru: '4 часа назад', kz: '4 сағат бұрын' },
+        nearSchool: false,
+        confirmations: 9
+      }
+    ];
+
+    // Пресеты локаций Шымкента для модального окна
+    const PRESET_LOCATIONS = [
+      {
+        address: { ru: 'Пр. Тауке хана / пр. Республики (Перекресток)', kz: 'Тәуке хан д-лы / Республика д-лы (Қиылыс)' },
+        x: 28.0,
+        y: 50.0,
+        contractor: { ru: 'СМЭУ / ТОО «ОңтүстікЖолСтрой» (Гарантия до 2028)', kz: 'ММЭБ / «ОңтүстікЖолСтрой» ЖШС (Кепілдік 2028 дейін)' }
+      },
+      {
+        address: { ru: 'Пр. Тауке хана, 34 (Возле школы №1)', kz: 'Тәуке хан д-лы, 34 (№1 мектеп жанында)' },
+        x: 39.5,
+        y: 42.0,
+        contractor: { ru: 'СМЭУ Шымкент (Приоритетная школьная зона 500м)', kz: 'Шымкент ММЭБ (Мектеп маңындағы басым аймақ 500м)' }
+      },
+      {
+        address: { ru: 'Пр. Абая, 18 (Остановочный комплекс)', kz: 'Абай д-лы, 18 (Аялдама кешені)' },
+        x: 61.0,
+        y: 74.3,
+        contractor: { ru: 'ТОО «Shymkent Bus Stop» (Гарантия до 2027)', kz: '«Shymkent Bus Stop» ЖШС (Кепілдік 2027 дейін)' }
+      },
+      {
+        address: { ru: 'Пр. Тауке хана, 88 (Магистраль)', kz: 'Тәуке хан д-лы, 88 (Магистраль)' },
+        x: 81.5,
+        y: 50.0,
+        contractor: { ru: 'ТОО «ОңтүстікЖолСтрой» (Гарантия до 2028)', kz: '«ОңтүстікЖолСтрой» ЖШС (Кепілдік 2028 дейін)' }
+      }
+    ];
+
+    // Состояние приложения
+    let activeCategory = 'all';
+    let selectedDefectId = null;
+    let schoolZonesVisible = false;
+    let liveSimInterval = null;
+    let modalSelectedCategory = 'marking';
+    let modalSelectedSubOptionIndex = 0;
+
+    // =========================================================================
+    // 5. ПЕРЕКЛЮЧЕНИЕ ЯЗЫКА (ҚАЗ / РУС)
+    // =========================================================================
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang === 'kz' ? 'kk' : 'ru';
+
+      // Обновляем кнопки переключателя ҚАЗ / РУС
+      const btnKz = document.getElementById('langBtnKz');
+      const btnRu = document.getElementById('langBtnRu');
+      if (lang === 'kz') {
+        btnKz.className = 'px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-rose-600 text-white shadow-sm';
+        btnRu.className = 'px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all text-neutral-400 hover:text-white';
+      } else {
+        btnRu.className = 'px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-rose-600 text-white shadow-sm';
+        btnKz.className = 'px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all text-neutral-400 hover:text-white';
+      }
+
+      const t = UI_TEXT[lang];
+      document.getElementById('headerSubtitle').textContent = t.headerSubtitle;
+      document.getElementById('schoolZoneBtnText').textContent = t.schoolZoneBtn;
+      document.getElementById('liveSimText').textContent = liveSimInterval ? t.liveSimOn : t.liveSimOff;
+      document.getElementById('reportMainBtnText').textContent = t.reportMainBtn;
+      document.getElementById('mapSectorLabel').innerHTML = t.mapSector;
+      document.getElementById('legSos').textContent = t.legSos;
+      document.getElementById('legHigh').textContent = t.legHigh;
+      document.getElementById('legMed').textContent = t.legMed;
+      document.getElementById('legFixed').textContent = t.legFixed;
+      document.getElementById('svgPark1').textContent = t.park1;
+      document.getElementById('svgPark2').textContent = t.park2;
+      document.getElementById('schoolTag1').textContent = t.school1;
+      document.getElementById('schoolTag2').textContent = t.school2;
+      document.getElementById('schoolTag3').textContent = t.school3;
+      document.getElementById('liveFeedTitle').textContent = t.liveFeedTitle;
+      document.getElementById('statTotalLabel').textContent = t.statTotalLabel;
+      document.getElementById('statTodayTag').textContent = t.statTodayTag;
+      document.getElementById('statSosLabel').textContent = t.statSosLabel;
+      document.getElementById('statReactionTag').textContent = t.statReactionTag;
+      document.getElementById('statWarrantyLabel').textContent = t.statWarrantyLabel;
+      document.getElementById('statContractorPay').textContent = t.statContractorPay;
+      document.getElementById('statBudgetSave').textContent = t.statBudgetSave;
+      document.getElementById('statFixedLabel').textContent = t.statFixedLabel;
+      document.getElementById('statVerifiedByCitizens').textContent = t.statVerifiedByCitizens;
+      document.getElementById('contractorPanelTitle').textContent = t.contractorPanelTitle;
+      document.getElementById('goszakupBadge').textContent = t.goszakupBadge;
+      document.getElementById('contractorPanelSubtitle').textContent = t.contractorPanelSubtitle;
+      document.getElementById('eotinishNote').textContent = t.eotinishNote;
+
+      // Модальное окно
+      document.getElementById('modalTitle').textContent = t.modalTitle;
+      document.getElementById('modalSubtitle').textContent = t.modalSubtitle;
+      document.getElementById('step1Label').textContent = t.step1;
+      document.getElementById('step2Label').textContent = t.step2;
+      document.getElementById('step3Label').textContent = t.step3;
+      document.getElementById('modalCatSelectLabel').textContent = t.modalCatSelect;
+      document.getElementById('subOptionLabel').textContent = t.subOptionLabel;
+      document.getElementById('modalLocLabel').textContent = t.modalLocLabel;
+      document.getElementById('startScanBtnText').textContent = t.startScanBtn;
+      document.getElementById('modalBackBtn').textContent = t.modalBackBtn;
+      document.getElementById('publishBtnText').textContent = t.publishBtn;
+      document.getElementById('ticketFormedTitle').textContent = t.ticketFormed;
+
+      // Перерисовываем динамические списки
+      renderCategoryFilters();
+      renderMapMarkers();
+      renderLiveFeed();
+      renderContractors();
+      renderLocationOptions();
+      if (!document.getElementById('reportModal').classList.contains('hidden')) {
+        renderModalCategories();
+      }
+      if (selectedDefectId) {
+        selectDefect(selectedDefectId);
+      }
+    }
+
+    // =========================================================================
+    // 6. ИНИЦИАЛИЗАЦИЯ И РЕНДЕР КОМПОНЕНТОВ
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      setLanguage('ru');
+      updateCounters();
+    });
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('categoryFilters');
+      container.innerHTML = CATEGORIES.map(cat => {
+        const count = cat.id === 'all'
+          ? defects.length
+          : defects.filter(d => d.category === cat.id).length;
+        const isActive = activeCategory === cat.id;
+
+        return `
+          <button onclick="setCategoryFilter('${cat.id}')"
+            class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+              isActive
+                ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-600/25'
+                : 'bg-neutral-900/90 text-neutral-400 hover:text-white hover:bg-neutral-800 border-neutral-800'
+            }">
+            <span class="text-sm">${cat.icon}</span>
+            <span>${cat.name[currentLang]}</span>
+            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
+              isActive ? 'bg-white text-rose-600 font-black' : 'bg-neutral-800 text-neutral-300'
+            }">${count}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setCategoryFilter(catId) {
+      activeCategory = catId;
+      renderCategoryFilters();
+      renderMapMarkers();
+      renderLiveFeed();
+    }
+
+    function renderContractors() {
+      const container = document.getElementById('contractorsList');
+      container.innerHTML = CONTRACTORS_DATA.map(c => {
+        const name = typeof c.name === 'object' ? c.name[currentLang] : c.name;
+        const badge = typeof c.badge === 'object' ? c.badge[currentLang] : c.badge;
+        const leftMeta = c.leftMeta[currentLang];
+        const rightMeta = c.rightMeta[currentLang];
+
+        let cardBorder = 'border-neutral-800 bg-neutral-950/90';
+        let badgeColor = 'text-emerald-400';
+        let barColor = 'bg-white';
+
+        if (c.badgeType === 'warn') {
+          cardBorder = 'border-rose-600/40 bg-neutral-950/90';
+          badgeColor = 'text-rose-400';
+          barColor = 'bg-rose-500';
+        } else if (c.badgeType === 'bad') {
+          cardBorder = 'border-rose-600/70 bg-rose-950/20';
+          badgeColor = 'text-rose-500';
+          barColor = 'bg-rose-600';
+        }
+
+        return `
+          <div class="p-3 rounded-xl border ${cardBorder}">
+            <div class="flex items-center justify-between text-xs mb-1 gap-2">
+              <span class="font-bold text-white truncate">${name}</span>
+              <span class="font-mono ${badgeColor} font-bold whitespace-nowrap">${badge}</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-neutral-400 mb-2">
+              <span>${leftMeta}</span>
+              <span class="text-neutral-300">${rightMeta}</span>
+            </div>
+            <div class="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+              <div class="${barColor} h-full rounded-full transition-all duration-500" style="width: ${c.percent}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLocationOptions() {
+      const select = document.getElementById('locationSelect');
+      const prevVal = select.value || '0';
+      select.innerHTML = PRESET_LOCATIONS.map((loc, idx) => `
+        <option value="${idx}">${loc.address[currentLang]}</option>
+      `).join('');
+      select.value = prevVal;
+    }
+
+    // Стили критичности в красно-бело-черной гамме
+    function getSeverityStyles(severity) {
+      switch (severity) {
+        case 'sos':
+          return {
+            bg: 'bg-rose-600',
+            ring: 'bg-rose-600',
+            border: 'border-white',
+            text: 'text-rose-500',
+            badgeBg: 'bg-rose-600 text-white border-rose-400'
+          };
+        case 'high':
+          return {
+            bg: 'bg-white text-black',
+            ring: 'bg-white',
+            border: 'border-rose-600',
+            text: 'text-white',
+            badgeBg: 'bg-white/15 border-white/40 text-white'
+          };
+        case 'fixed':
+          return {
+            bg: 'bg-emerald-500',
+            ring: 'bg-emerald-500',
+            border: 'border-white',
+            text: 'text-emerald-400',
+            badgeBg: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+          };
+        default: // medium
+          return {
+            bg: 'bg-neutral-800',
+            ring: 'bg-rose-500',
+            border: 'border-rose-500',
+            text: 'text-neutral-300',
+            badgeBg: 'bg-neutral-800 border-neutral-600 text-neutral-200'
+          };
+      }
+    }
+
+    function renderMapMarkers(newestId = null) {
+      const layer = document.getElementById('markersLayer');
+      const filtered = activeCategory === 'all'
+        ? defects
+        : defects.filter(d => d.category === activeCategory);
+
+      layer.innerHTML = filtered.map(item => {
+        const catObj = CATEGORIES.find(c => c.id === item.category) || CATEGORIES[1];
+        const st = getSeverityStyles(item.severity);
+        const isSelected = selectedDefectId === item.id;
+        const isNew = item.id === newestId;
+
+        return `
+          <div style="left: ${item.x}%; top: ${item.y}%;"
+               class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group ${isNew ? 'marker-new' : ''}"
+               onclick="selectDefect('${item.id}')">
+            
+            ${item.severity !== 'fixed' ? `
+              <span class="absolute inset-0 rounded-full ${st.ring} opacity-65 marker-pulse"></span>
+            ` : ''}
+
+            <div class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full ${st.bg} border-2 ${isSelected ? 'border-rose-500 scale-125 ring-4 ring-rose-600/40' : st.border} shadow-xl flex items-center justify-center text-base sm:text-lg transition-transform duration-200 group-hover:scale-110">
+              <span>${catObj.icon}</span>
+              ${item.severity === 'sos' ? `
+                <span class="absolute -top-1.5 -right-2 px-1 rounded bg-black border border-rose-500 text-[8px] font-mono font-black text-rose-500">SOS</span>
+              ` : ''}
+            </div>
+
+            <div class="hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 p-2 rounded-xl bg-black/95 border border-neutral-700 text-center shadow-2xl z-20">
+              <div class="text-[11px] font-bold text-white truncate">${item.title[currentLang]}</div>
+              <div class="text-[10px] text-neutral-400 truncate">${item.address[currentLang]}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectDefect(id) {
+      selectedDefectId = id;
+      renderMapMarkers();
+      const item = defects.find(d => d.id === id);
+      if (!item) return;
+
+      const t = UI_TEXT[currentLang];
+      const catObj = CATEGORIES.find(c => c.id === item.category);
+      const st = getSeverityStyles(item.severity);
+      const card = document.getElementById('defectDetailCard');
+
+      card.classList.remove('hidden');
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-2 mb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">${catObj.icon}</span>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${st.badgeBg}">${item.statusText[currentLang]}</span>
+                <span class="text-[10px] font-mono text-neutral-400">${item.id}</span>
+              </div>
+              <h4 class="text-sm font-bold text-white mt-1 leading-snug">${item.title[currentLang]}</h4>
+            </div>
+          </div>
+          <button onclick="closeDefectCard()" class="w-7 h-7 rounded-lg bg-neutral-900 hover:bg-rose-600 text-neutral-400 hover:text-white flex items-center justify-center text-xs border border-neutral-800">✕</button>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-neutral-950 border border-neutral-800 mb-3 space-y-1.5">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="text-rose-400 font-mono font-bold">${t.detailAiVerdict(item.aiConfidence)}</span>
+            <span class="text-neutral-400">${item.timeAgo[currentLang]}</span>
+          </div>
+          <p class="text-xs text-neutral-200">${item.subType[currentLang]}. ${item.aiNote[currentLang]}</p>
+        </div>
+
+        <div class="space-y-1.5 text-xs mb-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-neutral-400">${t.detailAddress}</span>
+            <span class="text-white font-semibold text-right">${item.address[currentLang]}</span>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-neutral-400">${t.detailResp}</span>
+            <span class="text-white font-bold text-right">${item.responsible[currentLang]}</span>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-neutral-400">${t.detailWarranty}</span>
+            <span class="text-rose-400 font-mono text-[11px] font-semibold text-right">${item.warranty[currentLang]}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          ${item.severity !== 'fixed' ? `
+            <button onclick="confirmRepair('${item.id}')" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
+              <span>${t.confirmRepairBtn}</span>
+            </button>
+          ` : `
+            <div class="flex-1 py-2 px-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold text-center">
+              ${t.repairConfirmedBadge(item.confirmations)}
+            </div>
+          `}
+          <button onclick="upvoteDefect('${item.id}')" class="py-2 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-mono font-bold border border-neutral-700">
+            👍 ${item.confirmations}
+          </button>
+        </div>
+      `;
+    }
+
+    function closeDefectCard() {
+      selectedDefectId = null;
+      document.getElementById('defectDetailCard').classList.add('hidden');
+      renderMapMarkers();
+    }
+
+    function confirmRepair(id) {
+      const item = defects.find(d => d.id === id);
+      if (!item) return;
+      item.severity = 'fixed';
+      item.statusText = { ru: 'Починено и подтверждено', kz: 'Жөнделді және расталды' };
+      item.confirmations += 1;
+      item.timeAgo = { ru: 'Только что', kz: 'Жаңа ғана' };
+
+      renderCategoryFilters();
+      renderMapMarkers();
+      renderLiveFeed();
+      updateCounters();
+      selectDefect(id);
+      showToast(UI_TEXT[currentLang].toastConfirmed(id));
+    }
+
+    function upvoteDefect(id) {
+      const item = defects.find(d => d.id === id);
+      if (!item) return;
+      item.confirmations += 1;
+      selectDefect(id);
+      renderLiveFeed();
+      showToast(UI_TEXT[currentLang].toastUpvoted);
+    }
+
+    function renderLiveFeed() {
+      const list = document.getElementById('liveFeedList');
+      const filtered = activeCategory === 'all'
+        ? defects
+        : defects.filter(d => d.category === activeCategory);
+
+      document.getElementById('feedCountLabel').textContent = UI_TEXT[currentLang].feedShown(filtered.length);
+
+      list.innerHTML = filtered.slice(0, 4).map(item => {
+        const catObj = CATEGORIES.find(c => c.id === item.category);
+        const st = getSeverityStyles(item.severity);
+
+        return `
+          <div onclick="selectDefect('${item.id}')" class="p-3 rounded-xl bg-neutral-950 hover:bg-neutral-900 border border-neutral-800 hover:border-rose-600/50 cursor-pointer transition-all flex flex-col justify-between gap-2">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold flex items-center gap-1.5 text-neutral-200">
+                  <span>${catObj.icon}</span>
+                  <span class="font-mono text-[10px] text-neutral-400">${item.id}</span>
+                </span>
+                <span class="w-2 h-2 rounded-full ${item.severity === 'sos' ? 'bg-rose-600' : item.severity === 'fixed' ? 'bg-emerald-500' : 'bg-white'}"></span>
+              </div>
+              <div class="text-xs font-bold text-white line-clamp-1">${item.title[currentLang]}</div>
+              <div class="text-[11px] text-neutral-400 truncate mt-0.5">${item.address[currentLang]}</div>
+            </div>
+            <div class="flex items-center justify-between pt-1.5 border-t border-neutral-800/80 text-[10px]">
+              <span class="${st.text} font-semibold truncate max-w-[145px]">${item.statusText[currentLang]}</span>
+              <span class="text-neutral-500 font-mono">${item.timeAgo[currentLang]}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateCounters() {
+      const total = 140 + defects.length;
+      const sosCount = defects.filter(d => d.severity === 'sos').length;
+      const fixedCount = 84 + defects.filter(d => d.severity === 'fixed').length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statSos').textContent = sosCount;
+      document.getElementById('statFixed').textContent = fixedCount;
+    }
+
+    // =========================================================================
+    // 7. РЕЖИМ СЛЕПЫХ ЗОН У ШКОЛ ШЫМКЕНТА (500М)
+    // =========================================================================
+    function toggleSchoolZones() {
+      schoolZonesVisible = !schoolZonesVisible;
+      const layer = document.getElementById('schoolZonesLayer');
+      const btn = document.getElementById('toggleSchoolZonesBtn');
+      const indicator = document.getElementById('schoolZoneIndicator');
+
+      if (schoolZonesVisible) {
+        layer.classList.remove('hidden');
+        btn.classList.add('border-rose-600', 'bg-rose-600/15', 'text-white');
+        indicator.classList.remove('bg-rose-600/40');
+        indicator.classList.add('bg-rose-600', 'animate-ping');
+        showToast(UI_TEXT[currentLang].toastSchoolOn);
+      } else {
+        layer.classList.add('hidden');
+        btn.classList.remove('border-rose-600', 'bg-rose-600/15', 'text-white');
+        indicator.classList.add('bg-rose-600/40');
+        indicator.classList.remove('bg-rose-600', 'animate-ping');
+      }
+    }
+
+    // =========================================================================
+    // 8. ДЕМО-ПОТОК ЖИВЫХ НАХОДОК В ШЫМКЕНТЕ
+    // =========================================================================
+    function toggleLiveSimulation() {
+      const btnText = document.getElementById('liveSimText');
+      const btn = document.getElementById('toggleLiveSimBtn');
+      const t = UI_TEXT[currentLang];
+
+      if (liveSimInterval) {
+        clearInterval(liveSimInterval);
+        liveSimInterval = null;
+        btnText.textContent = t.liveSimOff;
+        btn.classList.remove('border-rose-600', 'bg-rose-600/15', 'text-white');
+        showToast(t.toastSimOff);
+      } else {
+        btnText.textContent = t.liveSimOn;
+        btn.classList.add('border-rose-600', 'bg-rose-600/15', 'text-white');
+        showToast(t.toastSimOn);
+        
+        const demoSamples = [
+          {
+            category: 'marking',
+            title: { ru: 'Стерта стоп-линия перед перекрестком', kz: 'Қиылыс алдындағы тоқтау сызығы өшкен' },
+            subType: { ru: 'Износ термопластика 84%', kz: 'Термопластиктің тозуы 84%' },
+            address: { ru: 'Пр. Абая / пр. Кунаева', kz: 'Абай д-лы / Қонаев д-лы' },
+            x: 48.5,
+            y: 62.0,
+            severity: 'medium',
+            statusText: { ru: 'AI-проверка пройдена', kz: 'AI-тексеруден өтті' },
+            responsible: { ru: 'СМЭУ Шымкент', kz: 'Шымкент ММЭБ' },
+            warranty: { ru: 'Включено в план покраски', kz: 'Бояу жоспарына енгізілді' }
+          },
+          {
+            category: 'sign',
+            title: { ru: 'Развернут знак «Главная дорога»', kz: '«Басты жол» белгісі бұрылып кеткен' },
+            subType: { ru: 'Знак повернут на 90 градусов после ветра', kz: 'Қатты желден белгі 90 градусқа бұрылған' },
+            address: { ru: 'Пр. Тауке хана, 55', kz: 'Тәуке хан д-лы, 55' },
+            x: 59.5,
+            y: 50.0,
+            severity: 'high',
+            statusText: { ru: 'Передано в СМЭУ', kz: 'ММЭБ-ке жіберілді' },
+            responsible: { ru: 'СМЭУ • Бригада №3', kz: 'ММЭБ • №3 бригада' },
+            warranty: { ru: 'Реакция до 4 часов', kz: '4 сағат ішінде жөндеу' }
+          },
+          {
+            category: 'road_manhole',
+            title: { ru: 'Просевший люк теплосети [ТС]', kz: 'Шөгіп кеткен жылу желісі құдығы [ТС]' },
+            subType: { ru: 'Перепад высоты 9 см от уровня асфальта', kz: 'Асфальт деңгейінен 9 см төмен түскен' },
+            address: { ru: 'Пр. Республики, 44', kz: 'Республика д-лы, 44' },
+            x: 28.0,
+            y: 64.0,
+            severity: 'high',
+            statusText: { ru: 'Претензия в Теплосети', kz: 'Жылу желілеріне шағым' },
+            responsible: { ru: 'ГКП «Қуатжылуорталық-3»', kz: '«Қуатжылуорталық-3» МКК' },
+            warranty: { ru: 'Гарантийное восстановление', kz: 'Кепілдік бойынша қалпына келтіру' }
+          }
+        ];
+
+        let idx = 0;
+        liveSimInterval = setInterval(() => {
+          const sample = demoSamples[idx % demoSamples.length];
+          const newId = 'SQ-' + Math.floor(200 + Math.random() * 799);
+          const newDefect = {
+            ...sample,
+            id: newId,
+            aiConfidence: (95 + Math.random() * 4).toFixed(1) + '%',
+            aiNote: { ru: 'Автоматически верифицировано по GPS и фото.', kz: 'GPS және фото арқылы авто-расталды.' },
+            timeAgo: { ru: 'Только что', kz: 'Жаңа ғана' },
+            nearSchool: false,
+            confirmations: 1
+          };
+
+          defects.unshift(newDefect);
+          renderCategoryFilters();
+          renderMapMarkers(newId);
+          renderLiveFeed();
+          updateCounters();
+          showToast(`${newId}: ${newDefect.title[currentLang]}`);
+          idx++;
+        }, 4500);
+      }
+    }
+
+    // =========================================================================
+    // 9. МОДАЛЬНОЕ ОКНО С КРАСНЫМ AI-СКАНЕРОМ
+    // =========================================================================
+    function openReportModal() {
+      document.getElementById('reportModal').classList.remove('hidden');
+      resetToStep1();
+      renderModalCategories();
+      renderLocationOptions();
+    }
+
+    function closeReportModal() {
+      stopRoadCamera();
+      document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    function renderModalCategories() {
+      const grid = document.getElementById('modalCategoryGrid');
+      const selectableCats = CATEGORIES.filter(c => c.id !== 'all');
+
+      grid.innerHTML = selectableCats.map(cat => {
+        const isSelected = modalSelectedCategory === cat.id;
+        return `
+          <button type="button" onclick="selectModalCategory('${cat.id}')"
+            class="p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 ${
+              isSelected
+                ? 'bg-rose-600/20 border-rose-500 text-white shadow-md shadow-rose-600/15'
+                : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white'
+            }">
+            <span class="text-xl">${cat.icon}</span>
+            <span class="text-xs font-bold leading-tight">${cat.shortName[currentLang]}</span>
+          </button>
+        `;
+      }).join('');
+
+      renderModalSubOptions();
+    }
+
+    function selectModalCategory(catId) {
+      modalSelectedCategory = catId;
+      modalSelectedSubOptionIndex = 0;
+      renderModalCategories();
+    }
+
+    function renderModalSubOptions() {
+      const cat = CATEGORIES.find(c => c.id === modalSelectedCategory);
+      if (!cat) return;
+      const options = cat.subOptions[currentLang];
+
+      const container = document.getElementById('subOptionsContainer');
+      container.innerHTML = options.map((opt, idx) => {
+        const active = modalSelectedSubOptionIndex === idx;
+        return `
+          <button type="button" onclick="selectModalSubOption(${idx})"
+            class="px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+              active
+                ? 'bg-rose-600 text-white font-bold border-rose-500'
+                : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-600'
+            }">
+            ${opt}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectModalSubOption(idx) {
+      modalSelectedSubOptionIndex = idx;
+      renderModalSubOptions();
+    }
+
+    function resetToStep1() {
+      document.getElementById('modalStep1').classList.remove('hidden');
+      document.getElementById('modalStep2').classList.add('hidden');
+      
+      document.getElementById('stepBadge1').className = 'flex items-center gap-1.5 text-rose-500 font-bold';
+      document.getElementById('stepBadge2').className = 'flex items-center gap-1.5 text-neutral-500';
+      document.getElementById('stepBadge3').className = 'flex items-center gap-1.5 text-neutral-500';
+    }
+
+    // Camera/photo audit state. A real vision model can be connected through the endpoint below.
+    let roadAuditCameraStream = null;
+    let roadAuditPhotoData = null;
+    let roadAuditPhotoName = '';
+    let roadAuditAnalysis = null;
+    const ROAD_AUDIT_AI_ENDPOINT = ''; // Set to your secured backend URL to enable real AI inference.
+
+    async function startRoadCamera() {
+      const video = document.getElementById('roadCameraVideo');
+      const status = document.getElementById('cameraStatus');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        status.textContent = 'Камера недоступна в file://. Откройте сайт через HTTPS или localhost либо загрузите фото.';
+        return;
+      }
+      try {
+        stopRoadCamera();
+        roadAuditCameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false
+        });
+        video.srcObject = roadAuditCameraStream;
+        await video.play();
+        video.classList.remove('hidden');
+        document.getElementById('cameraPlaceholder').classList.add('hidden');
+        status.textContent = 'Камера активна • наведите её на дефект и сделайте снимок';
+      } catch (err) {
+        status.textContent = err.name === 'NotAllowedError'
+          ? 'Нет доступа к камере. Разрешите доступ в браузере или загрузите фото.'
+          : 'Не удалось включить камеру. Попробуйте загрузить фото.';
+      }
+    }
+
+    function stopRoadCamera() {
+      if (roadAuditCameraStream) {
+        roadAuditCameraStream.getTracks().forEach(track => track.stop());
+        roadAuditCameraStream = null;
+      }
+      const video = document.getElementById('roadCameraVideo');
+      if (video) video.srcObject = null;
+    }
+
+    function setRoadAuditPhoto(dataUrl, name) {
+      roadAuditPhotoData = dataUrl;
+      roadAuditPhotoName = name || 'camera-capture.jpg';
+      const preview = document.getElementById('roadPhotoPreview');
+      preview.src = dataUrl;
+      preview.classList.remove('hidden');
+      document.getElementById('cameraPlaceholder').classList.add('hidden');
+      document.getElementById('roadCameraVideo').classList.add('hidden');
+      document.getElementById('cameraStatus').textContent = 'Фото загружено • ' + roadAuditPhotoName;
+      document.getElementById('analyzePhotoBtn').disabled = false;
+      roadAuditAnalysis = null;
+      stopRoadCamera();
+    }
+
+    function captureRoadPhoto() {
+      const video = document.getElementById('roadCameraVideo');
+      if (!roadAuditCameraStream || !video.videoWidth) {
+        document.getElementById('cameraStatus').textContent = 'Сначала включите камеру.';
+        return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      setRoadAuditPhoto(canvas.toDataURL('image/jpeg', 0.88), 'camera-capture.jpg');
+    }
+
+    function handleRoadPhotoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        document.getElementById('cameraStatus').textContent = 'Выберите файл изображения.';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => setRoadAuditPhoto(reader.result, file.name);
+      reader.readAsDataURL(file);
+    }
+
+    async function analyzeRoadPhoto() {
+      if (!roadAuditPhotoData) return;
+      const btn = document.getElementById('analyzePhotoBtn');
+      const status = document.getElementById('cameraStatus');
+      const log = document.getElementById('aiConsoleLog');
+      const progress = document.getElementById('scanProgressText');
+      const cat = CATEGORIES.find(c => c.id === modalSelectedCategory);
+      const subText = cat.subOptions[currentLang][modalSelectedSubOptionIndex];
+      const locIdx = parseInt(document.getElementById('locationSelect').value, 10);
+      const loc = PRESET_LOCATIONS[locIdx];
+      btn.disabled = true;
+      log.innerHTML = '<div class="text-rose-400">▸ Фото принято. Проверка качества изображения...</div>';
+      progress.textContent = 'PHOTO • 20%';
+      status.textContent = 'Подготовка снимка к анализу...';
+
+      const img = new Image();
+      img.onload = async () => {
+        const quality = `${img.naturalWidth} × ${img.naturalHeight}px`;
+        log.innerHTML += `<div class="text-neutral-300">▸ Разрешение снимка: ${quality}</div>`;
+        progress.textContent = 'PHOTO • 45%';
+        const scaleCm = Number(document.getElementById('scaleReferenceCm').value) || null;
+        const measuredDepthCm = Number(document.getElementById('manualDepthCm').value) || null;
+        const analysisInput = {
+          image: roadAuditPhotoData,
+          category: modalSelectedCategory,
+          reportedSubtype: subText,
+          location: loc.address[currentLang],
+          imageWidth: img.naturalWidth,
+          imageHeight: img.naturalHeight,
+          scaleReferenceCm: scaleCm,
+          manuallyMeasuredDepthCm: measuredDepthCm,
+          requestedOutputs: ['defect_type', 'severity', 'visible_area', 'depth_estimate', 'safety_risk', 'recommendations']
+        };
+
+        if (ROAD_AUDIT_AI_ENDPOINT) {
+          try {
+            const response = await fetch(ROAD_AUDIT_AI_ENDPOINT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(analysisInput)
+            });
+            if (!response.ok) throw new Error('AI endpoint returned ' + response.status);
+            roadAuditAnalysis = await response.json();
+            renderRoadAuditAnalysis(roadAuditAnalysis, true);
+          } catch (error) {
+            roadAuditAnalysis = null;
+            log.innerHTML += '<div class="text-rose-300">▸ Не удалось связаться с AI-сервисом. Фото сохранено в текущей заявке.</div>';
+            renderRoadAuditAnalysis({
+              mode: 'pending',
+              note: 'Снимок готов, но сервер AI-анализа не ответил. Подключите backend endpoint и повторите анализ.'
+            }, false);
+          }
+        } else {
+          roadAuditAnalysis = {
+            mode: 'pending',
+            image: quality,
+            category: cat.shortName[currentLang],
+            reportedSubtype: subText,
+            scaleReferenceCm: scaleCm,
+            manuallyMeasuredDepthCm: measuredDepthCm,
+            note: 'Фото получено. Для автоматического распознавания дефекта, измерения площади и оценки глубины подключите AI backend. По одному обычному фото точную глубину определить нельзя; нужен масштабный ориентир, несколько ракурсов или датчик глубины.'
+          };
+          renderRoadAuditAnalysis(roadAuditAnalysis, false);
+        }
+        progress.textContent = 'PHOTO • READY';
+        status.textContent = 'Фото обработано. Проверьте отчёт перед публикацией.';
+        document.getElementById('aiResultCard').classList.remove('hidden');
+        document.getElementById('ticketSummaryText').textContent =
+          `${subText} — ${loc.address[currentLang]} • ${quality}`;
+        document.getElementById('ticketContractorText').textContent =
+          `${UI_TEXT[currentLang].detailResp} ${loc.contractor[currentLang]}`;
+        document.getElementById('publishPointBtn').disabled = false;
+        document.getElementById('stepBadge3').className = 'flex items-center gap-1.5 text-rose-500 font-bold';
+        btn.disabled = false;
+      };
+      img.onerror = () => {
+        status.textContent = 'Не удалось прочитать изображение. Попробуйте другой файл.';
+        btn.disabled = false;
+      };
+      img.src = roadAuditPhotoData;
+    }
+
+    function renderRoadAuditAnalysis(data, isRealAI) {
+      const log = document.getElementById('aiConsoleLog');
+      const safe = value => String(value ?? 'Не определено').replace(/[&<>"']/g, ch => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[ch]));
+      if (isRealAI) {
+        log.innerHTML += `<div class="text-emerald-400">▸ AI backend вернул результаты анализа.</div>
+          <div class="text-neutral-200">▸ Тип: ${safe(data.defect_type || data.type)}</div>
+          <div class="text-neutral-200">▸ Критичность: ${safe(data.severity)}</div>
+          <div class="text-neutral-200">▸ Видимая площадь: ${safe(data.visible_area)}</div>
+          <div class="text-neutral-200">▸ Глубина: ${safe(data.depth_estimate)}</div>
+          <div class="text-neutral-200">▸ Риск: ${safe(data.safety_risk)}</div>
+          <div class="text-neutral-300">▸ Рекомендации: ${safe(data.recommendations)}</div>`;
+        document.getElementById('detectionBox').classList.remove('hidden');
+        document.getElementById('detectionLabel').textContent = 'AI ANALYSIS';
+      } else {
+        log.innerHTML += `<div class="text-amber-300">▸ AI-модель пока не подключена — автоматический диагноз не заявляется.</div>
+          <div class="text-neutral-200">▸ ${safe(data.note)}</div>`;
+        document.getElementById('detectionBox').classList.add('hidden');
+      }
+      const report = document.getElementById('roadAuditDetailedReport');
+      report.classList.remove('hidden');
+      report.innerHTML = `<div class="text-xs font-bold text-white mb-1">Детальный анализ снимка</div>
+        <div class="text-[11px] text-neutral-300">Статус: ${isRealAI ? 'AI-анализ получен' : 'Ожидает подключения AI-модели'}</div>
+        <div class="text-[11px] text-neutral-400 mt-1">${safe(data.note || 'Результаты предоставлены подключённой моделью; проверьте их перед отправкой.')}</div>`;
+    }
+
+    function startAiScanStep() {
+      document.getElementById('modalStep1').classList.add('hidden');
+      document.getElementById('modalStep2').classList.remove('hidden');
+      document.getElementById('stepBadge1').className = 'flex items-center gap-1.5 text-white font-semibold';
+      document.getElementById('stepBadge2').className = 'flex items-center gap-1.5 text-rose-500 font-bold';
+
+      const resultCard = document.getElementById('aiResultCard');
+      const publishBtn = document.getElementById('publishPointBtn');
+      document.getElementById('detectionBox').classList.add('hidden');
+      resultCard.classList.add('hidden');
+      document.getElementById('roadAuditDetailedReport').classList.add('hidden');
+      publishBtn.disabled = true;
+      document.getElementById('aiConsoleLog').innerHTML =
+        '<div class="text-rose-400">▸ Ожидание фото с камеры или загрузки изображения...</div>';
+      document.getElementById('scanProgressText').textContent = 'CAMERA • READY';
+      document.getElementById('scanVisualPreview').innerHTML = getCategorySvgIllustration(modalSelectedCategory);
+      if (roadAuditPhotoData) {
+        document.getElementById('roadPhotoPreview').src = roadAuditPhotoData;
+        document.getElementById('roadPhotoPreview').classList.remove('hidden');
+        document.getElementById('analyzePhotoBtn').disabled = false;
+      }
+    }
+
+    function publishNewDefect() {
+      const cat = CATEGORIES.find(c => c.id === modalSelectedCategory);
+      const subRu = cat.subOptions.ru[modalSelectedSubOptionIndex];
+      const subKz = cat.subOptions.kz[modalSelectedSubOptionIndex];
+      const locIdx = parseInt(document.getElementById('locationSelect').value, 10);
+      const loc = PRESET_LOCATIONS[locIdx];
+
+      const jitterX = (Math.random() - 0.5) * 3.5;
+      const jitterY = (Math.random() - 0.5) * 3.5;
+
+      const isSos = subRu.includes('SOS') || modalSelectedCategory === 'traffic_light';
+      const newId = 'SQ-' + Math.floor(300 + Math.random() * 699);
+
+      const newDefect = {
+        id: newId,
+        category: modalSelectedCategory,
+        title: { ru: subRu, kz: subKz },
+        subType: {
+          ru: 'Зафиксировано жителем через AI-сканер ShymQyzmet',
+          kz: 'Тұрғын ShymQyzmet AI-сканері арқылы тіркеді'
+        },
+        address: loc.address,
+        x: Math.min(92, Math.max(8, loc.x + jitterX)),
+        y: Math.min(90, Math.max(12, loc.y + jitterY)),
+        severity: isSos ? 'sos' : 'high',
+        statusText: isSos
+          ? { ru: 'SOS • Передано в дежурную часть', kz: 'SOS • Кезекші бөлімге жіберілді' }
+          : { ru: 'Направлено подрядчику', kz: 'Мердігерге жолданды' },
+        aiConfidence: roadAuditAnalysis && roadAuditAnalysis.confidence
+          ? `${roadAuditAnalysis.confidence}%`
+          : 'Не подтверждена',
+        evidencePhoto: roadAuditPhotoData || null,
+        aiAnalysis: roadAuditAnalysis || { mode: 'pending', note: 'AI-анализ не подключён' },
+        aiNote: cat.warrantyInfo,
+        responsible: cat.defaultService,
+        warranty: loc.contractor,
+        timeAgo: { ru: 'Только что', kz: 'Жаңа ғана' },
+        nearSchool: locIdx === 1,
+        confirmations: 1
+      };
+
+      defects.unshift(newDefect);
+      activeCategory = 'all';
+
+      closeReportModal();
+      renderCategoryFilters();
+      renderMapMarkers(newId);
+      renderLiveFeed();
+      updateCounters();
+      selectDefect(newId);
+      showToast(UI_TEXT[currentLang].toastPublished(newId));
+    }
+
+    function getCategorySvgIllustration(category) {
+      const t = UI_TEXT[currentLang];
+      if (category === 'marking') {
+        return `
+          <svg class="w-64 h-40" viewBox="0 0 260 160">
+            <rect width="260" height="160" fill="#171717" rx="12" />
+            <rect x="35" y="25" width="190" height="16" fill="#FFFFFF" opacity="0.22" rx="2" />
+            <rect x="35" y="55" width="190" height="16" fill="#FFFFFF" opacity="0.12" rx="2" />
+            <rect x="35" y="85" width="190" height="16" fill="#FFFFFF" opacity="0.18" rx="2" />
+            <rect x="35" y="115" width="190" height="16" fill="#FFFFFF" opacity="0.1" rx="2" />
+            <text x="130" y="84" fill="#FFFFFF" font-size="11" font-family="JetBrains Mono" font-weight="bold" text-anchor="middle">${t.scanWearText}</text>
+          </svg>
+        `;
+      }
+      if (category === 'traffic_light') {
+        return `
+          <svg class="w-40 h-44" viewBox="0 0 140 160">
+            <rect x="45" y="15" width="50" height="130" rx="12" fill="#0A0A0A" stroke="#404040" stroke-width="3" />
+            <circle cx="70" cy="42" r="14" fill="#450A0A" stroke="#E11D48" stroke-dasharray="3 3" stroke-width="2" />
+            <circle cx="70" cy="80" r="14" fill="#262626" />
+            <circle cx="70" cy="118" r="14" fill="#262626" />
+            <text x="70" y="46" fill="#FFFFFF" font-size="10" font-family="JetBrains Mono" font-weight="bold" text-anchor="middle">ERR</text>
+          </svg>
+        `;
+      }
+      if (category === 'sign') {
+        return `
+          <svg class="w-56 h-40" viewBox="0 0 220 160">
+            <rect x="106" y="75" width="8" height="75" fill="#737373" />
+            <polygon points="110,20 155,95 65,95" fill="#FFFFFF" stroke="#E11D48" stroke-width="6" />
+            <circle cx="85" cy="55" r="24" fill="#262626" opacity="0.92" />
+            <circle cx="120" cy="42" r="20" fill="#171717" opacity="0.9" />
+            <circle cx="138" cy="68" r="22" fill="#262626" opacity="0.92" />
+          </svg>
+        `;
+      }
+      if (category === 'bus_stop') {
+        return `
+          <svg class="w-64 h-40" viewBox="0 0 260 160">
+            <rect x="30" y="25" width="200" height="12" rx="4" fill="#E11D48" />
+            <rect x="42" y="37" width="8" height="105" fill="#737373" />
+            <rect x="210" y="37" width="8" height="105" fill="#737373" />
+            <rect x="55" y="42" width="150" height="80" fill="#FFFFFF" fill-opacity="0.08" stroke="#FFFFFF" stroke-opacity="0.3" />
+            <path d="M 110 42 L 130 78 L 105 105 L 145 122" fill="none" stroke="#E11D48" stroke-width="2.5" />
+          </svg>
+        `;
+      }
+      return `
+        <svg class="w-64 h-40" viewBox="0 0 260 160">
+          <rect width="260" height="160" fill="#171717" rx="12" />
+          <ellipse cx="130" cy="85" rx="54" ry="32" fill="#050505" stroke="#E11D48" stroke-width="3" stroke-dasharray="6 4" />
+          <text x="130" y="89" fill="#FFFFFF" font-size="11" font-family="JetBrains Mono" font-weight="bold" text-anchor="middle">${t.scanManholeText}</text>
+        </svg>
+      `;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3200);
+    }
+  </script>
+</body>
+</html>
